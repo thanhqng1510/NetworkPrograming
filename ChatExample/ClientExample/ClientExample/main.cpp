@@ -20,7 +20,7 @@ int main() {
         return 0;
     }
     
-    int sockfd;
+    int sockfd = 0;
     addrinfo* p;
     for (p = serv_info; p != nullptr; p = p->ai_next) {
         sockfd = socket(serv_info->ai_family, serv_info->ai_socktype, serv_info->ai_protocol);
@@ -44,19 +44,30 @@ int main() {
     freeaddrinfo(serv_info);
 
     while (true) {
-        char msg[1025];
-        memset(msg, 0, sizeof(msg));
+        char sent[1025];
+        memset(sent, 0, sizeof(sent));
         std::cout << "Enter: ";
-        std::cin.getline(msg, 1025);
-        int bytes_sent = static_cast<int>(send(sockfd, msg, strlen(msg), 0));
+        std::cin.getline(sent, 1025);
+        int bytes_sent = static_cast<int>(send(sockfd, sent, strlen(sent), 0));
         if (bytes_sent == -1) {
             std::cout << "Error send\n";
             break;
         }
-        else if (bytes_sent < strlen(msg)) {
+        else if (bytes_sent < strlen(sent))
             std::cout << "Not finish send\n";
+                
+        char received[1025];
+        memset(received, 0, sizeof(received));
+        int bytes_recv = static_cast<int>(recv(sockfd, received, 1025, 0));
+        if (bytes_recv == -1) {
+            std::cout << "Error recv\n";
             break;
         }
+        else if (bytes_recv == 0) {
+            std::cout << "Lost connection recv\n";
+            break;
+        }
+        std::cout << "Received: " << received << "\n";
     }
     
     close(sockfd);

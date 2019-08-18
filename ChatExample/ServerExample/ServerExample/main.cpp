@@ -22,7 +22,7 @@ int main() {
         return 0;
     }
     
-    int listen_sock;
+    int listen_sock = 0;
     addrinfo* p;
     for (p = serv_info; p != nullptr; p = p->ai_next) {
         listen_sock = socket(serv_info->ai_family, serv_info->ai_socktype, serv_info->ai_protocol);
@@ -57,9 +57,9 @@ int main() {
         std::cout << "Accepted\n";
         
         while (true) {
-            char buffer[1025];
-            memset(buffer, 0, sizeof(buffer));
-            int bytes_recv = static_cast<int>(recv(new_sock, buffer, 1025, 0));
+            char received[1025];
+            memset(received, 0, sizeof(received));
+            int bytes_recv = static_cast<int>(recv(new_sock, received, 1025, 0));
             if (bytes_recv == -1) {
                 std::cout << "Error recv\n";
                 break;
@@ -68,7 +68,19 @@ int main() {
                 std::cout << "Lost connection recv\n";
                 break;
             }
-            std::cout << buffer << "\n";
+            std::cout << "Received: " << received << "\n";
+            
+            char sent[1025];
+            memset(sent, 0, sizeof(sent));
+            std::cout << "Enter: ";
+            std::cin.getline(sent, 1025);
+            int bytes_sent = static_cast<int>(send(new_sock, sent, strlen(sent), 0));
+            if (bytes_sent == -1) {
+                std::cout << "Error send\n";
+                break;
+            }
+            else if (bytes_sent < strlen(sent))
+                std::cout << "Not finish send\n";
         }
         
         close(new_sock);
