@@ -48,7 +48,6 @@ int main() {
         memset(msg, 0, sizeof(msg));
         std::cout << "Enter: ";
         std::cin.getline(msg, 1025);
-        //std::cin >> msg;
         int bytes_sent = static_cast<int>(send(sockfd, msg, strlen(msg), 0));
         if (bytes_sent == -1) {
             std::cout << "Error send\n";
