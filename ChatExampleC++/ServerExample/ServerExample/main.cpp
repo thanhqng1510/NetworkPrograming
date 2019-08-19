@@ -4,6 +4,7 @@
 #include <string.h>
 #include <iostream>
 #include <unistd.h>
+#include <arpa/inet.h>
 
 const char* PORT = "1707";
 const int BACK_LOG = 20;
@@ -51,11 +52,17 @@ int main() {
     freeaddrinfo(serv_info);
     
     while (true) {
-        sockaddr_storage client_addr;
-        socklen_t client_addr_size = sizeof(client_addr);
-        int new_sock = accept(listen_sock, (sockaddr*)&client_addr, &client_addr_size);
-        std::cout << "Accepted\n";
+        sockaddr_storage client;
+        socklen_t client_size = sizeof(client);
+        int new_sock = accept(listen_sock, (sockaddr*)&client, &client_size);
         
+        char client_addr[INET6_ADDRSTRLEN];
+        memset(client_addr, 0, INET6_ADDRSTRLEN);
+        if (client.ss_family == AF_INET)
+            std::cout << inet_ntop(AF_INET, &((sockaddr_in*)&client)->sin_addr, client_addr, INET6_ADDRSTRLEN) << " connected\n";
+        else
+            std::cout << inet_ntop(AF_INET6, &((sockaddr_in6*)&client)->sin6_addr, client_addr, INET6_ADDRSTRLEN) << " connected\n";
+            
         while (true) {
             char received[1025];
             memset(received, 0, sizeof(received));
@@ -68,11 +75,11 @@ int main() {
                 std::cout << "Lost connection recv\n";
                 break;
             }
-            std::cout << "Received: " << received << "\n";
+            std::cout << "[Client]: " << received << "\n";
             
             char sent[1025];
             memset(sent, 0, sizeof(sent));
-            std::cout << "Enter: ";
+            std::cout << "[Server]: ";
             std::cin.getline(sent, 1025);
             int bytes_sent = static_cast<int>(send(new_sock, sent, strlen(sent), 0));
             if (bytes_sent == -1) {

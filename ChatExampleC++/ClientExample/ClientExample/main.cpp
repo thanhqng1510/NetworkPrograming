@@ -4,8 +4,10 @@
 #include <string.h>
 #include <iostream>
 #include <unistd.h>
+#include <arpa/inet.h>
 
 const char* PORT = "1707";
+const char* IP = "127.0.0.1";
 
 int main() {
     addrinfo hints;
@@ -14,7 +16,7 @@ int main() {
     hints.ai_socktype = SOCK_STREAM;
     
     addrinfo* serv_info;
-    int status = getaddrinfo("127.0.0.1", PORT, &hints, &serv_info);
+    int status = getaddrinfo(IP, PORT, &hints, &serv_info);
     if (status != 0) {
         std::cout << "Error getaddrinfo\n";
         return 0;
@@ -41,12 +43,14 @@ int main() {
         return 0;
     }
     
+    std::cout << "Connected to " << IP << "\n";
+    
     freeaddrinfo(serv_info);
-
+    
     while (true) {
         char sent[1025];
         memset(sent, 0, sizeof(sent));
-        std::cout << "Enter: ";
+        std::cout << "[Client]: ";
         std::cin.getline(sent, 1025);
         int bytes_sent = static_cast<int>(send(sockfd, sent, strlen(sent), 0));
         if (bytes_sent == -1) {
@@ -67,7 +71,7 @@ int main() {
             std::cout << "Lost connection recv\n";
             break;
         }
-        std::cout << "Received: " << received << "\n";
+        std::cout << "[Server]: " << received << "\n";
     }
     
     close(sockfd);
